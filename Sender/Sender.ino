@@ -27,7 +27,7 @@ when testing and calibration.
 *************************************************************************/
 unsigned long lastTime = 0;
 unsigned long timerDelay = 50; 
-float Theshold = 12;
+float Theshold = 10.75;
 
 float cal_x;
 float cal_y;

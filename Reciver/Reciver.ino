@@ -145,7 +145,7 @@ void loop()
 {
   printLED();
   //printOLED();
-    delay(1000); 
+  //delay(1000); 
   reset(); 
 }
 
@@ -175,20 +175,20 @@ void printLED()
     digitalWrite(D8, LOW);
     digitalWrite(D6, HIGH);
     Serial.println("HIGH");
-    delay(500);
+    delay(1500);
   }
   else
   {
     digitalWrite(D8, HIGH);
     digitalWrite(D6, LOW);
     Serial.println("LOW");
-    delay(500);
+    //delay(500);
   }
 }
 void reset()
 {
   digitalWrite(D6, LOW); //GREEN
   digitalWrite(D7, LOW); //BLUE
-  digitalWrite(D8, LOW); //RED
+  digitalWrite(D8, HIGH); //RED
   Serial.println("reset");
 }
