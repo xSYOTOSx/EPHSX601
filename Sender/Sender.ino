@@ -58,11 +58,8 @@ This section setus up various things.
   delivered sucessfuly or not. Realistlcly this is for debugging purposes
   only. 
 *************************************************************************/
-//Test Reciver MAC Adress: 40:F5:20:28:A1:D4
-uint8_t broadcastAddress[] = {0x40, 0xF5, 0x20, 0x28, 0xA1, 0xD4};
-
 //Recivers MAC Address:  C8:C9:A3:5B:DA:BB
-//uint8_t broadcastAddress[] = {0xC8, 0xC9, 0xA3, 0x5B, 0xDA, 0xBB};
+uint8_t broadcastAddress[] = {0xC8, 0xC9, 0xA3, 0x5B, 0xDA, 0xBB};
 typedef struct struct_message 
 {
     int id;
@@ -118,7 +115,7 @@ void setup()
   3) At htis time we are not using the gyro feture of the MPU6050
   4) This libary also has a low pass filter
   *************************************************************************/
-  /*
+  
   Serial.println("Adafruit MPU6050 test!");
   if (!mpu.begin()) 
   {
@@ -144,7 +141,7 @@ void setup()
   //mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);Serial.print("Filter bandwidth set to: 184 Hz");
   //mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);Serial.print("Filter bandwidth set to: 260 Hz");
 
-  */
+  
 
 
   /***************************************************************************
@@ -226,11 +223,11 @@ void loop()
   
   if ((millis() - lastTime) > timerDelay) 
   {
-    //sensors_event_t a, g, temp;
-    //mpu.getEvent(&a, &g, &temp);
-    myData.x = random(50);//a.acceleration.x + cal_x;
-    myData.y = 1;//a.acceleration.y + cal_y;
-    myData.z = 1;//a.acceleration.z + cal_z; 
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
+    myData.x = a.acceleration.x + cal_x;
+    myData.y = a.acceleration.y + cal_y;
+    myData.z = a.acceleration.z + cal_z; 
     myData.m = sqrt( pow(myData.x,2)  + pow(myData.y,2)+ pow(myData.z,2) );
     if (myData.m > Theshold)
       { myData.isMoving = 1;}//True
@@ -241,7 +238,7 @@ void loop()
     
     //Plotter();
     Printer();
-    delay(500);
+    //delay(500);
 
 
     lastTime = millis();

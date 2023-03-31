@@ -170,7 +170,7 @@ void printOLED()
 
 void printLED()
 {
-  if(boardsStruct[4].isMoving) //True Case
+  if(boardsStruct[2].isMoving) //True Case
   {
     digitalWrite(D8, LOW);
     digitalWrite(D6, HIGH);
