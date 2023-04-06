@@ -41,8 +41,18 @@ void setup()
   }
 
   Serial.println("AW9523 found!");
-  aw1.pinMode(B1PR, OUTPUT); aw1.pinMode(B1PB, OUTPUT); aw1.pinMode(B1PG, OUTPUT); // Board 1
-  aw1.pinMode(B2PR, OUTPUT); aw1.pinMode(B2PB, OUTPUT); aw1.pinMode(B2PG, OUTPUT); // Board 2
+  aw1.pinMode(B1PR, OUTPUT);  aw1.pinMode(B1PB, OUTPUT);  aw1.pinMode(B1PG, OUTPUT);  // Board 1
+  aw1.pinMode(B2PR, OUTPUT);  aw1.pinMode(B2PB, OUTPUT);  aw1.pinMode(B2PG, OUTPUT);  // Board 2
+  aw1.pinMode(B3PR, OUTPUT);  aw1.pinMode(B3PB, OUTPUT);  aw1.pinMode(B3PG, OUTPUT);  // Board 3
+  aw1.pinMode(B4PR, OUTPUT);  aw1.pinMode(B4PB, OUTPUT);  aw1.pinMode(B4PG, OUTPUT);  // Board 4
+  aw1.pinMode(B5PR, OUTPUT);  aw1.pinMode(B5PB, OUTPUT);  aw1.pinMode(B5PG, OUTPUT);  // Board 5
+  aw2.pinMode(B6PR, OUTPUT);  aw2.pinMode(B6PB, OUTPUT);  aw2.pinMode(B6PG, OUTPUT);  // Board 6
+  aw2.pinMode(B7PR, OUTPUT);  aw2.pinMode(B7PB, OUTPUT);  aw2.pinMode(B7PG, OUTPUT);  // Board 7
+  aw2.pinMode(B8PR, OUTPUT);  aw2.pinMode(B8PB, OUTPUT);  aw2.pinMode(B8PG, OUTPUT);  // Board 8
+  aw2.pinMode(B9PR, OUTPUT);  aw2.pinMode(B9PB, OUTPUT);  aw2.pinMode(B9PG, OUTPUT);  // Board 9
+  aw2.pinMode(B10PR, OUTPUT); aw2.pinMode(B10PB, OUTPUT); aw2.pinMode(B10PG, OUTPUT); // Board 10
+  aw3.pinMode(B11PR, OUTPUT); aw3.pinMode(B11PB, OUTPUT); aw3.pinMode(B11PG, OUTPUT); // Board 11
+  aw3.pinMode(B12PR, OUTPUT); aw3.pinMode(B12PB, OUTPUT); aw3.pinMode(B12PG, OUTPUT); // Board 12
   //Serial.printf("Starting Value: %d \n", var);
   //size = sizeof(foo)/sizeof(int);
   //Serial.printf("there are %d vlaues in the foo array \n", size);
@@ -58,32 +68,14 @@ void loop()
 while (var < (sizeof(sequence)/sizeof(int))) 
   {
 
-
+    Serial.println("--------------------------------------------------------");
     Serial.printf("sequence # %d wants box #%d moved \n", var,sequence[var]);
-    // Tell what board we want to be interacted with
-    
-    MoveMe();
-    Imoved();
-    
+    MoveMe(); delay(1000);
+    int rnd=Imoved();
+    CheckifChosenCorectly(rnd,var,sequence);
 
     
-  /*
-    if (foo[var]=rnd) 
-    {
-      str ="YES";
-      RGB_reset();
-      RGB_G();
-    }
-    else
-    {
-      str="NO";
-      RGB_reset();
-      RGB_R();
-    }
-    
-    Serial.printf("array foo[%d] = %d. Rand = %d. Match? %s \n",var,foo[var],rnd,str);
-    //delay(1000);
-    */
+
     delay(1000);
     RGB_reset(); delay(500);
     var++;
@@ -93,19 +85,50 @@ while (var < (sizeof(sequence)/sizeof(int)))
 
 void MoveMe()
 {
-  if(sequence[var]==1)  {setBoardColor(1,  LOW, HIGH, LOW); Serial.println("Setting Board 1 to blue");}
-  if(sequence[var]==2)  {setBoardColor(2,  LOW, HIGH, LOW); Serial.println("Setting Board 2 to blue");}
-  if(sequence[var]==3)  {setBoardColor(3,  LOW, HIGH, LOW); Serial.println("Setting Board 3 to blue");}
-  if(sequence[var]==4)  {setBoardColor(4,  LOW, HIGH, LOW); Serial.println("Setting Board 4 to blue");}
-  if(sequence[var]==5)  {setBoardColor(5,  LOW, HIGH, LOW); Serial.println("Setting Board 5 to blue");}
-  if(sequence[var]==6)  {setBoardColor(6,  LOW, HIGH, LOW); Serial.println("Setting Board 6 to blue");}
-  if(sequence[var]==7)  {setBoardColor(7,  LOW, HIGH, LOW); Serial.println("Setting Board 7 to blue");}
-  if(sequence[var]==8)  {setBoardColor(8,  LOW, HIGH, LOW); Serial.println("Setting Board 8 to blue");}
-  if(sequence[var]==9)  {setBoardColor(9,  LOW, HIGH, LOW); Serial.println("Setting Board 9 to blue");}
-  if(sequence[var]==10) {setBoardColor(10, LOW, HIGH, LOW); Serial.println("Setting Board 0 to blue");}
-  if(sequence[var]==11) {setBoardColor(11, LOW, HIGH, LOW); Serial.println("Setting Board 1 to blue");}
-  if(sequence[var]==12) {setBoardColor(12, LOW, HIGH, LOW); Serial.println("Setting Board 2 to blue");}
+  if(sequence[var]==1)  {setBoardColor(1,  LOW, HIGH, LOW); Serial.println("Box 1 set to blue");}
+  if(sequence[var]==2)  {setBoardColor(2,  LOW, HIGH, LOW); Serial.println("Box 2 set to blue");}
+  if(sequence[var]==3)  {setBoardColor(3,  LOW, HIGH, LOW); Serial.println("Box 3 set to blue");}
+  if(sequence[var]==4)  {setBoardColor(4,  LOW, HIGH, LOW); Serial.println("Box 4 set to blue");}
+  if(sequence[var]==5)  {setBoardColor(5,  LOW, HIGH, LOW); Serial.println("Box 5 set to blue");}
+  if(sequence[var]==6)  {setBoardColor(6,  LOW, HIGH, LOW); Serial.println("Box 6 set to blue");}
+  if(sequence[var]==7)  {setBoardColor(7,  LOW, HIGH, LOW); Serial.println("Box 7 set to blue");}
+  if(sequence[var]==8)  {setBoardColor(8,  LOW, HIGH, LOW); Serial.println("Box 8 set to blue");}
+  if(sequence[var]==9)  {setBoardColor(9,  LOW, HIGH, LOW); Serial.println("Box 9 set to blue");}
+  if(sequence[var]==10) {setBoardColor(10, LOW, HIGH, LOW); Serial.println("Box 0 set to blue");}
+  if(sequence[var]==11) {setBoardColor(11, LOW, HIGH, LOW); Serial.println("Box 1 set to blue");}
+  if(sequence[var]==12) {setBoardColor(12, LOW, HIGH, LOW); Serial.println("Box 2 set to blue");}
 }
+void MoveMe_Correct()
+{
+  if(sequence[var]==1)  {setBoardColor(1,  LOW, LOW, HIGH); Serial.println("Box 1 set to Green");}
+  if(sequence[var]==2)  {setBoardColor(2,  LOW, LOW, HIGH); Serial.println("Box 2 set to Green");}
+  if(sequence[var]==3)  {setBoardColor(3,  LOW, LOW, HIGH); Serial.println("Box 3 set to Green");}
+  if(sequence[var]==4)  {setBoardColor(4,  LOW, LOW, HIGH); Serial.println("Box 4 set to Green");}
+  if(sequence[var]==5)  {setBoardColor(5,  LOW, LOW, HIGH); Serial.println("Box 5 set to Green");}
+  if(sequence[var]==6)  {setBoardColor(6,  LOW, LOW, HIGH); Serial.println("Box 6 set to Green");}
+  if(sequence[var]==7)  {setBoardColor(7,  LOW, LOW, HIGH); Serial.println("Box 7 set to Green");}
+  if(sequence[var]==8)  {setBoardColor(8,  LOW, LOW, HIGH); Serial.println("Box 8 set to Green");}
+  if(sequence[var]==9)  {setBoardColor(9,  LOW, LOW, HIGH); Serial.println("Box 9 set to Green");}
+  if(sequence[var]==10) {setBoardColor(10, LOW, LOW, HIGH); Serial.println("Box 0 set to Green");}
+  if(sequence[var]==11) {setBoardColor(11, LOW, LOW, HIGH); Serial.println("Box 1 set to Green");}
+  if(sequence[var]==12) {setBoardColor(12, LOW, LOW, HIGH); Serial.println("Box 2 set to Green");}
+}
+void MoveMe_WRONG()
+{
+  if(sequence[var]==1)  {setBoardColor(1,  HIGH, LOW, LOW); Serial.println("Box 1 set to RED");}
+  if(sequence[var]==2)  {setBoardColor(2,  HIGH, LOW, LOW); Serial.println("Box 2 set to RED");}
+  if(sequence[var]==3)  {setBoardColor(3,  HIGH, LOW, LOW); Serial.println("Box 3 set to RED");}
+  if(sequence[var]==4)  {setBoardColor(4,  HIGH, LOW, LOW); Serial.println("Box 4 set to RED");}
+  if(sequence[var]==5)  {setBoardColor(5,  HIGH, LOW, LOW); Serial.println("Box 5 set to RED");}
+  if(sequence[var]==6)  {setBoardColor(6,  HIGH, LOW, LOW); Serial.println("Box 6 set to RED");}
+  if(sequence[var]==7)  {setBoardColor(7,  HIGH, LOW, LOW); Serial.println("Box 7 set to RED");}
+  if(sequence[var]==8)  {setBoardColor(8,  HIGH, LOW, LOW); Serial.println("Box 8 set to RED");}
+  if(sequence[var]==9)  {setBoardColor(9,  HIGH, LOW, LOW); Serial.println("Box 9 set to RED");}
+  if(sequence[var]==10) {setBoardColor(10, HIGH, LOW, LOW); Serial.println("Box 0 set to RED");}
+  if(sequence[var]==11) {setBoardColor(11, HIGH, LOW, LOW); Serial.println("Box 1 set to RED");}
+  if(sequence[var]==12) {setBoardColor(12, HIGH, LOW, LOW); Serial.println("Box 2 set to RED");}
+}
+
 void setBoardColor(int board, int red, int blue, int green) 
 {
   if (board == 1)  {aw1.digitalWrite(B1PR, red);  aw1.digitalWrite(B1PB, blue);  aw1.digitalWrite(B1PG, green);} 
@@ -138,10 +161,12 @@ void RGB_reset()
 }
 int Imoved()
 {
-int rnd = random(2); Serial.printf("I moved Box number %d \n ");
+int rnd = random(2); Serial.printf("I moved Box number %d \n ", rnd);
 return rnd;
 }
-void MovedCorrect(int rnd,int var, int sequence)
+void CheckifChosenCorectly(int rnd,int var, int sequence[])
 {
-Serial.printf("Desired: ",sequence[var]);
+if (rnd == sequence[var]) {MoveMe_Correct(); Serial.println("The correct one was moved"); delay(1000);}
+if (rnd != sequence[var]) {MoveMe_WRONG(); Serial.println("That was the incorrect movement"); delay(1000);}
 }
+
