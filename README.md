@@ -1,10 +1,3 @@
 # EPHSX601
 
-General Flow for me
-git add .
-git commit -m "the message"
-git push
-
-theirs:
-git rm -r FileName
-but i havent gotten to work
+This is a repository for the EPHSX601 project, which is an Arduino-based program designed to control a set of LED boards using a custom protocol over serial communication.
