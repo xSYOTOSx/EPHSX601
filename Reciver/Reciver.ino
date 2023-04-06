@@ -49,6 +49,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Not sure howe were gonna impleament this but we shall see. But for now we have it defined here
 int sequence[10] = {1, 1, 2, 2, 2,1,1,2,1,1};
+const unsigned long timeout = 5000;
+unsigned long previousMillis = 0;
 int var =0;//global counter. May have a better way if implementing this
 
 /*********************************************************************************************
@@ -149,7 +151,7 @@ void setup()
   */
   
   /*********************************************************************************************
-  Initalizes the multiplexer I2C
+  Initalizes the multiplexer I2C, and sets the diffrent pinouts
   *********************************************************************************************/
   if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
   //if (! aw1.begin(0x58)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
@@ -167,17 +169,58 @@ void setup()
   aw2.pinMode(B10PR, OUTPUT); aw2.pinMode(B10PB, OUTPUT); aw2.pinMode(B10PG, OUTPUT); // Board 10
   aw3.pinMode(B11PR, OUTPUT); aw3.pinMode(B11PB, OUTPUT); aw3.pinMode(B11PG, OUTPUT); // Board 11
   aw3.pinMode(B12PR, OUTPUT); aw3.pinMode(B12PB, OUTPUT); aw3.pinMode(B12PG, OUTPUT); // Board 12
+
+  //////////////////////////
+  // Set Testing Values
+  //////////////////////////
+  Serial.println("Giving Fake Values and saving into the structs ");
+  for (int i = 0; i < 15; i++)
+  {
+    myData.id = i;
+    boardsStruct[myData.id].x = i;
+    boardsStruct[myData.id].y = i;
+    boardsStruct[myData.id].z = i;
+    boardsStruct[myData.id].isMoving = random(2); // should produce a 0 or 1, 
+    String str;
+    if(boardsStruct[myData.id].isMoving == 1){str = "TRUE";};
+    if(boardsStruct[myData.id].isMoving == 0){str = "FLASE";};
+    Serial.printf("X:%d  Y:%d  Z:%d moving? %s \n", boardsStruct[myData.id].x,boardsStruct[myData.id].y,boardsStruct[myData.id].z,  str.c_str() );
+  }
+  
+
+
+
 }
 
 void loop()
 {
   //well have to do something like this for the end product
+  /***********************************************************
+  1) Waits for the sequence
+  2) Does the sequence. Tallies the correct and incorect. Notes time between interaction
+  3) Sends the data
+  4)
+  ***********************************************************/
   while (var < (sizeof(sequence)/sizeof(int))) 
   {
-    
+    unsigned long startTime = millis(); // gets current time for timeout  
     Serial.println("--------------------------------------------------------");
-    Serial.printf("sequence # %d wants box #%d moved \n", var,sequence[var]);
-    MoveMe(); delay(1000);
+    Serial.printf("Step # %d wants box #%d moved \n", var,sequence[var]);
+    MoveMe(); // indicates which box to move with a blue LEDs
+    while (millis() - startTime< timeout);
+    {
+
+      // Read the board if you want moved
+      // check for movement for others
+      //if(movement==True){break;}
+    }
+
+
+
+    
+    
+    
+    delay(1000);
     int rnd=Imoved();
     CheckifChosenCorectly(rnd,var,sequence);
 
@@ -207,7 +250,6 @@ void printOLED()
   {display.setCursor(20,0); display.print(" F ");}
   display.display();
 }
-
 void MoveMe()
 {
   if(sequence[var]==1)  {setBoardColor(1,  LOW, HIGH, LOW); Serial.println("Box 1 set to blue");}
@@ -253,7 +295,6 @@ void MoveMe_WRONG()
   if(sequence[var]==11) {setBoardColor(11, HIGH, LOW, LOW); Serial.println("Box 1 set to RED");}
   if(sequence[var]==12) {setBoardColor(12, HIGH, LOW, LOW); Serial.println("Box 2 set to RED");}
 }
-
 void setBoardColor(int board, int red, int blue, int green) 
 {
   if (board == 1)  {aw1.digitalWrite(B1PR, red);  aw1.digitalWrite(B1PB, blue);  aw1.digitalWrite(B1PG, green);} 
@@ -286,11 +327,11 @@ void RGB_reset()
 }
 int Imoved()
 {
-int rnd = random(2); Serial.printf("I moved Box number %d \n ", rnd);
-return rnd;
+  int rnd = random(2); Serial.printf("I moved Box number %d \n ", rnd);
+  return rnd;
 }
-void CheckifChosenCorectly(int rnd,int var, int sequence[])
+  void CheckifChosenCorectly(int rnd,int var, int sequence[])
 {
-if (rnd == sequence[var]) {MoveMe_Correct(); Serial.println("The correct one was moved"); delay(1000);}
-if (rnd != sequence[var]) {MoveMe_WRONG(); Serial.println("That was the incorrect movement"); delay(1000);}
+  if (rnd == sequence[var]) {MoveMe_Correct(); Serial.println("The correct one was moved"); delay(1000);}
+  if (rnd != sequence[var]) {MoveMe_WRONG(); Serial.println("That was the incorrect movement"); delay(1000);}
 }
