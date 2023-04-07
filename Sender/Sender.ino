@@ -28,6 +28,7 @@ when testing and calibration.
 unsigned long lastTime = 0;
 unsigned long timerDelay = 50; 
 float Theshold = 10.75;
+static int previousMovingState = -1; // for the if changed logic
 
 float cal_x;
 float cal_y;
@@ -197,18 +198,16 @@ void loop()
     myData.y = a.acceleration.y + cal_y;
     myData.z = a.acceleration.z + cal_z; 
     myData.m = sqrt( pow(myData.x,2)  + pow(myData.y,2)+ pow(myData.z,2) );
-    if (myData.m > Theshold)
-      { myData.isMoving = 1;}//True
-    else
-      { myData.isMoving = 0;}//False       
-    esp_now_send(0, (uint8_t *) &myData, sizeof(myData));
-    
-    
-    //Plotter();
-    Printer();
-    //delay(500);
-
-
+    if (myData.m > Theshold) { myData.isMoving = 1;}//True
+    else                     { myData.isMoving = 0;}//False       
+    //Plotter(); // for serial plotter useage
+    Printer(); //Serial Printer to see that the accerlation is doing
+    if (myData.isMoving != previousMovingState) 
+    { //only sends to reciver if thiers a change to the moving
+      esp_now_send(0, (uint8_t *) &myData, sizeof(myData));
+      previousMovingState = myData.isMoving; // update previous state
+      delay(500);
+    }
     lastTime = millis();
   }
 }
@@ -230,8 +229,9 @@ void Printer()
   /*************************************************************************
   This lets use the Serial print for debugguging purposes.  
   *************************************************************************/
-  Serial.println("    X    Y    Z   MAG");
-  Serial.print(" ");
+  //Serial.println("    X    Y    Z   MAG");
+  Serial.printf(" X:%f  Y:%f  Z:%f  MAG:%f  Is Moving? %d \n", myData.x, myData.y, myData.z,myData.m,myData.isMoving);
+  /*Serial.print(" ");
   Serial.print(myData.x);
   Serial.print(" ");
   Serial.print(myData.y);
@@ -240,5 +240,5 @@ void Printer()
   Serial.print(" ");
   Serial.print(myData.m);
   Serial.println("   Acceleration (m/s^2)");
-  Serial.print("Is Moving?: "); Serial.println(myData.isMoving);
+  Serial.print("Is Moving?: "); Serial.println(myData.isMoving);*/
 }
