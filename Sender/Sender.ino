@@ -162,52 +162,20 @@ void setup()
   ID 16: 40:F5:20:26:B9:FB TEST Sender
   ID 17: 40:F5:20:28:A1:D4 TEST Reciver  
   ***************************************************************************/
-  if (WiFi.macAddress() == "C8:C9:A3:0B:46:21")
-  {
-    Serial.println("Board ID: 1");  
-    myData.id = 1;
-    cal_x=0.15;
-    cal_y=0.08;
-    cal_z=-0.42;
-    delay(5000);
-  }
-  if (WiFi.macAddress() == "24:D7:EB:C6:E5:7A")
-  {
-    Serial.println("Board ID: 2");  
-    myData.id = 2;
-    cal_x=0.15;
-    cal_y=0.45;
-    cal_z=-0.52;
-    delay(5000);
-  }
-  if (WiFi.macAddress() == "50:02:91:EA:E3:13")
-  {
-    Serial.println("Board ID: 3");  
-    myData.id = 3;
-    cal_x=0;
-    cal_y=0;
-    cal_z=0;
-    delay(5000);
-  }
-  if (WiFi.macAddress() == "8C:CE:4E:CE:E8:1A")
-  {
-    Serial.println("Board ID: 4");  
-    myData.id = 4;
-    cal_x=0;
-    cal_y=0;
-    cal_z=0;
-    delay(5000);
-  }
-
-  if (WiFi.macAddress() == "40:F5:20:26:B9:FB")
-  {
-    Serial.println("Board ID: 4");  
-    myData.id = 4;
-    cal_x=0;
-    cal_y=0;
-    cal_z=0;
-    delay(5000);
-  }
+  if (WiFi.macAddress() == "C8:C9:A3:0B:46:21"){Serial.println("Board ID: 1");  myData.id = 1;  cal_x=0.15;cal_y=0.08;cal_z=-0.42; delay(5000);}
+  if (WiFi.macAddress() == "24:D7:EB:C6:E5:7A"){Serial.println("Board ID: 2");  myData.id = 2;  cal_x=0.15;cal_y=0.45;cal_z=-0.52; delay(5000);}
+  if (WiFi.macAddress() == "50:02:91:EA:E3:13"){Serial.println("Board ID: 3");  myData.id = 3;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "8C:CE:4E:CE:E8:1A"){Serial.println("Board ID: 4");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "48:3F:DA:7D:FD:6C"){Serial.println("Board ID: 5");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "D8:BF:C0:C1:2C:41"){Serial.println("Board ID: 6");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "E0:98:06:8A:B6:B4"){Serial.println("Board ID: 7");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "BC:DD:C2:6C:7D:3A"){Serial.println("Board ID: 8");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "8C:CE:4E:CC:60:6D"){Serial.println("Board ID: 9");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "48:3F:DA:5F:A9:EE"){Serial.println("Board ID: 10"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "50:02:91:DA:F1:66"){Serial.println("Board ID: 11"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "EC:FA:BC:4C:36:65"){Serial.println("Board ID: 12"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "8C:AA:B5:69:B5:10"){Serial.println("Board ID: 13"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  if (WiFi.macAddress() == "98:F4:AB:BE:A0:AB"){Serial.println("Board ID: 14"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
 }
 
   /*************************************************************************

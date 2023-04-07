@@ -34,11 +34,10 @@ void setup()
   while (!Serial) delay(10); //waits for serial port to open
   
 
-  if (! aw1.begin(0x58)) 
-  {
-    Serial.println("AW9523 not found? Check wiring!");
-    while (1) delay(10);  // halt forever
-  }
+  if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
+  if (! aw1.begin(0x58)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
+  if (! aw1.begin(0x58)) { Serial.println("0x5A not found?");while (1) delay(10);} Serial.println("0x5A found!");//0x5A (A1 shorted)
+
 
   Serial.println("AW9523 found!");
   aw1.pinMode(B1PR, OUTPUT);  aw1.pinMode(B1PB, OUTPUT);  aw1.pinMode(B1PG, OUTPUT);  // Board 1
