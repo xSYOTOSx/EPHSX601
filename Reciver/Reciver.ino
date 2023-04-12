@@ -39,19 +39,40 @@ uint8_t B12PR = 4;  uint8_t B12PB = 5;  uint8_t B12PG = 6;  // Board 12
 // Setting Up the OLED for testing Purposes
 #include <SPI.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// command IDs
+const int PING       = 0;
+const int TESTLED    = 1; // not implemented in software
+const int BATTERY    = 2; // not implemented in software
+const int CALIBRATE  = 3; // not implemented in software
+const int NTRIALS    = 4;
+const int TRIAL      = 5;
+const int SEPARATION = 6;
+const int TIMEOUT    = 7;
+const int SAMPLERATE = 8;
+const int STREAM     = 9;
+
+// number of objects
+const int NOBJECTS   = 12;
 
 // Not sure howe were gonna impleament this but we shall see. But for now we have it defined here
 int sequence[10] = {1, 1, 2, 2, 2,1,1,2,1,1};
-const unsigned long timeout = 5000;
+unsigned long timeout = 5000;
 unsigned long previousMillis = 0;
 int i =0;//global counter. May have a better way if implementing this
+
+// data packet read from software 
+struct packet {
+  int commandNumber;
+  int objectID;
+  int data;
+};
+
+//  holds character array of hex numbers with array size
+struct hexString {
+  char * hex;
+  int    size;
+};
 
 /*********************************************************************************************
 This is the same as the senders. Were making the struct in the same was as the sender. THese 
@@ -133,22 +154,6 @@ void setup()
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(OnDataRecv);
   Serial.println("Setup has been compleated ");
-
-  /*********************************************************************************************
-  This is just setting up so i can use the OLED screen. This is primarally for debugging so we 
-  can test the communication without needining to plug it in to a computer becouse you can only 
-  read one serial at a time. 
-  *********************************************************************************************/
-  /*
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) 
-  {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  delay(2000);
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  */
   
   /*********************************************************************************************
   Initalizes the multiplexer I2C, and sets the diffrent pinouts
@@ -179,26 +184,21 @@ void setup()
 
 void loop()
 {
-  //well have to do something like this for the end product
-  /***********************************************************
-  1) Waits for the sequence
-  2) Does the sequence. Tallies the correct and incorect. Notes time between interaction
-  3) Sends the data
-  4)
-  ***********************************************************/
-  while (i < (sizeof(sequence)/sizeof(int))) 
+  DoCommand(ReadCommand());
+
+
+  
+}
+
+void TestSequence()
+{
+    while (i < (sizeof(sequence)/sizeof(int))) 
   {
-    unsigned long startTime = millis(); // gets current time for timeout
-    unsigned long Timeout = 5000;  
-
-    Serial.println("--------------------------------------------------------");
-    Serial.printf("Step # %d wants box #%d moved \n", i,sequence[i]);
+    unsigned long startTime = millis(); // gets current time for timeout  
     MoveMe(); // indicates which box to move with a blue LEDs
-
     bool isMoving = false;
     bool OtherBoxMoving = false;
-
-    while ((millis() - startTime) < Timeout)
+    while ((millis() - startTime) < timeout)
     {
       Serial.printf("Checking if box %d has moved \n", sequence[i]); delay(500);
       //Serial.print(".");
@@ -210,10 +210,9 @@ void loop()
       for(int j=1; j<13;j++)
       {
         Serial.printf("Checking if box %d has moved \n",j);        
-        if (j == sequence[i]){Serial.printf("were skipping box %d becluse it was already checked \n",j); continue;}
+        if (j == sequence[i]){ continue;}
         if (boardsStruct[j].isMoving) 
         { // check if any other box is moving
-          Serial.println("hey dombass the weong box moved");
           OtherBoxMoving = true; // set flag to indicate incorrect box is moving
           break; // exit the loop
         }        
@@ -221,7 +220,6 @@ void loop()
       if(OtherBoxMoving){break;}
     }
     
-
     if (isMoving) {MoveMe_Correct();delay(750);}
     else if(OtherBoxMoving )
     {
@@ -232,34 +230,256 @@ void loop()
     }
     
     else {MoveMe_WRONG();delay(750);}
-    //if(boardsStruct[sequence[var]].isMoving){MoveMe_Correct();}
-    //else(!boardsStruct[sequence[var]].isMoving){MoveMe_WRONG();}
-
-    //Serial.print("Is it moving?"); Serial.println(boardsStruct[sequence[var]].isMoving);
     delay(1000);
     RGB_reset(); delay(500);
     i++;
   }
 }
 
-void printOLED()
-{
-  int i=0; //This will allow for future itterations that we loop between all the boards
-  display.clearDisplay(); 
-  display.setCursor(0,0); display.print(boardsStruct[i].id +1);
-  display.setCursor(0,8); display.print("X");
-  display.setCursor(0,16); display.print("Y");
-  display.setCursor(0,24); display.print("Z");
+bool WritePacket(struct packet p)
+{  
+  // check packet inputs 
+  if( (p.commandNumber > STREAM) || // check that command number is valid 
+      (p.commandNumber < PING) ||
+      (p.objectID > NOBJECTS) ||    // check for valid ID 
+      (p.objectID < 0)
+  ){
+    return(false);
+  }
+
+  // convert to hex
+  struct hexString cmd  = IntToHexString(p.commandNumber);
+  struct hexString id   = IntToHexString(p.objectID);
+  struct hexString data = IntToHexString(p.data);
+
+  // check char* sizes
+  if( (cmd.size  > 1) ||
+      (id.size   > 1) ||
+      (data.size > 4)
+  ){
+    return(false);
+  }  
   
-  display.setCursor(20,8); display.print(boardsStruct[i].x);
-  display.setCursor(20,16); display.print(boardsStruct[i].y);
-  display.setCursor(20,24); display.print(boardsStruct[i].z);
-  if(boardsStruct[i].isMoving)
-  {display.setCursor(20,0); display.print(" T ");}
-  else
-  {display.setCursor(20,0); display.print(" F ");}
-  display.display();
+  // initialize packet of 8 bytes
+  char command[] = "00000000";
+
+  // set start/stop flags
+  command[0] = 0x02; // STX
+  command[7] = 0x03; // ETX
+  
+  // write command info 
+  command[1] = cmd.hex[0];
+  command[2] = id.hex[0];
+  if(data.size == 4){
+    command[3] = data.hex[0];
+    command[4] = data.hex[1];
+    command[5] = data.hex[2];
+    command[6] = data.hex[3];
+  } else if(data.size == 3){
+    command[4] = data.hex[0];
+    command[5] = data.hex[1];
+    command[6] = data.hex[2];    
+  }else if(data.size == 2){
+    command[5] = data.hex[0];
+    command[6] = data.hex[1];       
+  } else { // data.size == 1
+    command[6] = data.hex[0];     
+  }
+
+  // write to computer 
+  Serial.write(command);  
+
+  // delete pointers to prevent memory leak
+  delete[] cmd.hex;
+  delete[] id.hex;
+  delete[] data.hex;
+  
+  // return true for successful write
+  return(true);
 }
+
+struct hexString IntToHexString(uint n){
+  struct hexString hs; 
+  if(n == 0){
+    hs.size = 1;    
+  }
+  else{
+    // calculate number of digits needed to represent number in hex
+    hs.size = floor( log(n)/log(16) ) + 1;       
+  }
+  // convert n to hex string 
+  hs.hex = new char[hs.size];
+  sprintf(hs.hex, "%X", n);   
+  return(hs);
+}
+
+
+struct packet ReadCommand(){
+  // init strings
+  char b0_stx[]     = "0"; // note: string terminates with '\0'
+  char b1_cmd[]     = "0";
+  char b2_id[]      = "0";
+  char b3456_data[] = "0000";
+  char b7_etx[]     = "0";
+
+  // read until STX found, which marks the start of a data packet
+  while(true){
+    // wait for data 
+    if(Serial.available() > 0){
+      // read a byte
+      b0_stx[0] = Serial.read();
+      // check if byte is STX
+      if(b0_stx[0] == 0x02){
+        break;
+      }
+    }        
+  }   
+  
+  // wait for full packet to be available 
+  while(Serial.available() < 7){
+    delay(0.5);
+  }
+
+  // read next bytes  
+  b1_cmd[0]   = Serial.read();
+  b2_id[0]    = Serial.read();
+  b3456_data[0] = Serial.read();
+  b3456_data[1] = Serial.read();
+  b3456_data[2] = Serial.read();
+  b3456_data[3] = Serial.read();
+  b7_etx[0]   = Serial.read();
+
+  // verify that last byte is ETX, which ends the packet
+  if( b7_etx[0] != 0x03){
+    // bad packet, try to read again 
+    return(ReadCommand());
+  }
+
+  // convert hex characters into integers and add to struct 
+  struct packet p;
+  p.commandNumber = HexStringToInt(b1_cmd);
+  p.objectID      = HexStringToInt(b2_id);
+  p.data          = HexStringToInt(b3456_data);
+
+  return(p);
+}
+
+int HexStringToInt(char str[])
+{
+  // convert unsigned hex string into integer
+  return (int) strtoul(str, 0, 16);
+}
+
+
+void DoCommand(struct packet currentCommand)
+{
+  // easy access of struct parts
+  int cmd  = currentCommand.commandNumber;
+  int id   = currentCommand.objectID;
+  int data = currentCommand.data;
+
+  // choose function using command number 
+  switch(cmd) {
+    case PING:
+      Ping();  
+      break;
+    case TESTLED:
+      TestLED(id,data);
+      break;
+    case BATTERY:
+      Battery(id);
+      break;
+    case CALIBRATE:
+      Calibrate(id);
+      break;
+    case NTRIALS:
+      NTrials(data);
+      break;
+    case TRIAL:
+      Trial(id,data);
+      break;      
+    case SEPARATION:
+      Separation(data);
+      break;
+    case TIMEOUT:
+      Timeout(data);
+      break;
+    case SAMPLERATE:
+      SampleRate(data);
+      break;
+    case STREAM:
+      Stream(data);
+      break;
+    default:
+      NoCommand();
+  }
+}
+
+void Ping()
+{
+  struct packet p;
+  p.commandNumber = PING;
+  p.objectID = 0;
+  p.data = 0;
+  bool status = WritePacket(p);
+}
+
+void TestLED(int id, int time_ms)
+{
+  
+}
+
+void Battery(int id)
+{
+  
+}
+
+void Calibrate(int id)
+{
+
+}
+
+void NTrials(int numberOfTrials)
+{
+  
+}
+
+void Trial(int id, int trialNumber)
+{
+  
+}
+
+void Separation(int time_ms)
+{
+  
+}
+
+void Timeout(int time_ms)
+{
+  timeout = time_ms;
+
+  struct packet p;
+  p.commandNumber = TIMEOUT;
+  p.objectID =0;
+  p.data = 0;
+  bool status = WritePacket(p);
+}
+
+void SampleRate(int frequency_Hz)
+{
+  
+}
+
+void Stream(int flag)
+{
+  
+}
+
+void NoCommand()
+{
+  
+}
+
 void MoveMe()
 {
   if(sequence[i]==1)  {setBoardColor(1,  LOW, HIGH, LOW); Serial.println("Box 1 set to blue");}
