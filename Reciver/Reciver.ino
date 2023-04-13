@@ -7,38 +7,33 @@
   notice and this permission notice shall be included in all copies or substantial portions 
   of the Software."
 
+  Terms
+    Trial : One object being moved
+    Sequence: a grouping of trials
+
   Authers: Ryan Coppens & Thresa Kelly
 *********************************************************************************************/
 // ESP Board MAC Address:  C8:C9:A3:5B:DA:BB
-// This is the liberry for the WIFI in the esp8266
-#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h> 
 #include <espnow.h>
+#include <Adafruit_AW9523.h> // for multiplexer
 
-// this the the LED multiplexer libery. I am setting up all the variable names 
-// for the multiplexer
-#include <Adafruit_AW9523.h>
-Adafruit_AW9523 aw1;
 //Box # Color ie B1PR is Box 1 Pin for Red is 1
+Adafruit_AW9523 aw1;
 uint8_t B1PR = 1;  uint8_t B1PB = 2;  uint8_t B1PG = 3;  // Board 1
 uint8_t B2PR = 4;  uint8_t B2PB = 5;  uint8_t B2PG = 6;  // Board 2
 uint8_t B3PR = 7;  uint8_t B3PB = 8;  uint8_t B3PG = 9;  // Board 3
 uint8_t B4PR = 10; uint8_t B4PB = 11; uint8_t B4PG = 12; // Board 4
 uint8_t B5PR = 13; uint8_t B5PB = 14; uint8_t B5PG = 15; // Board 5
-
 Adafruit_AW9523 aw2;
 uint8_t B6PR = 1;   uint8_t B6PB = 2;   uint8_t B6PG = 3;   // Board 6
 uint8_t B7PR = 4;   uint8_t B7PB = 5;   uint8_t B7PG = 6;   // Board 7
 uint8_t B8PR = 7;   uint8_t B8PB = 8;   uint8_t B8PG = 9;   // Board 8
 uint8_t B9PR = 10;  uint8_t B9PB = 11;  uint8_t B9PG = 12;  // Board 9
 uint8_t B10PR = 13; uint8_t B10PB = 14; uint8_t B10PG = 15; // Board 10
-
 Adafruit_AW9523 aw3;
 uint8_t B11PR = 1;  uint8_t B11PB = 2;  uint8_t B11PG = 3;  // Board 11
 uint8_t B12PR = 4;  uint8_t B12PB = 5;  uint8_t B12PG = 6;  // Board 12
-
-// Setting Up the OLED for testing Purposes
-#include <SPI.h>
-#include <Wire.h>
 
 // command IDs
 const int PING       = 0;
@@ -52,34 +47,32 @@ const int TIMEOUT    = 7;
 const int SAMPLERATE = 8;
 const int STREAM     = 9;
 
+/////////////////////////////////////////////////////////////////////////
 // number of objects
 const int NOBJECTS   = 12;
-
-// Not sure howe were gonna impleament this but we shall see. But for now we have it defined here
 int sequence[10] = {1, 1, 2, 2, 2,1,1,2,1,1};
 unsigned long timeout = 5000;
 unsigned long previousMillis = 0;
 int i =0;//global counter. May have a better way if implementing this
 
+
+
 // data packet read from software 
-struct packet {
+struct packet 
+{
   int commandNumber;
   int objectID;
   int data;
 };
 
 //  holds character array of hex numbers with array size
-struct hexString {
+struct hexString 
+{
   char * hex;
   int    size;
 };
 
-/*********************************************************************************************
-This is the same as the senders. Were making the struct in the same was as the sender. THese 
-two need to match. After that we name 16 of these structs. One for the message being passed to
-us and than 15, one for each board. Then we put each of the structs for each sender into an 
-array of structs. 
-*********************************************************************************************/
+
 typedef struct struct_message 
 {
     int id;
@@ -98,24 +91,13 @@ struct_message board7; struct_message board8; struct_message board9;
 struct_message board10; struct_message board11; struct_message board12;
 struct_message board13; struct_message board14; struct_message board15;
 // Create an array with all the structures
-struct_message boardsStruct[15] = {board1, board2,board3,board4,board5, board6,board7,board8,
-                                    board9, board10,board11,board12,board13, board14,board15};
+struct_message boardsStruct[15] = {board1, board2,board3,board4,board5, board6,board7,board8,board9, board10,board11,board12,board13, board14,board15};
 
-
-/*********************************************************************************************
-The function is called onDataRecv() and should accept several parameters as follows:
-  - Get the sender board’s MAC address:
-  - Copy the content of the incomingData data variable into the myData variable.
-  - Each board is identified by its myData.id so we can call it in the boardsStruct array
-  - myData.id-1 allows us to start in boardStruct[0] when filling in the array
-  - For debugging purposes, is then printed in the Serial.
-*********************************************************************************************/
-void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) 
+void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len)
 {
   char macStr[18];
   //Serial.print("Packet received from: ");
-  //snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-  //         mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+  //snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
   //Serial.println(macStr);
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("Board ID: %u: %u bytes\n", myData.id, len);
@@ -136,32 +118,20 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len)
 void setup() 
 {
   Serial.begin(115200); while(! Serial);Serial.println("Hello World! Serial Has Begun");
-
-  /*********************************************************************************************
-  - Set the device as a Wi-Fi Station and disconnect Wi-Fi.
-  - Initialize ESP-NOW:
-  - This is a receiver board, so we’ll set it to ESP_NOW_ROLE_SLAVE
-  - Register for a callback function OnDataRecv() that will be called when data is received.
-  *********************************************************************************************/
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   Serial.println("Device set as a Wi-Fi Station");
-  if (esp_now_init() != 0) 
-  {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
+  if (esp_now_init() != 0) {Serial.println("Error initializing ESP-NOW"); return; }
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(OnDataRecv);
   Serial.println("Setup has been compleated ");
   
-  /*********************************************************************************************
-  Initalizes the multiplexer I2C, and sets the diffrent pinouts
-  *********************************************************************************************/
+  //Initalizes the multiplexer I2C
   if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
   if (! aw1.begin(0x58)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
   if (! aw1.begin(0x58)) { Serial.println("0x5A not found?");while (1) delay(10);} Serial.println("0x5A found!");//0x5A (A1 shorted)
 
+  //Defines pins on the multiplexer
   aw1.pinMode(B1PR, OUTPUT);  aw1.pinMode(B1PB, OUTPUT);  aw1.pinMode(B1PG, OUTPUT);  // Board 1
   aw1.pinMode(B2PR, OUTPUT);  aw1.pinMode(B2PB, OUTPUT);  aw1.pinMode(B2PG, OUTPUT);  // Board 2
   aw1.pinMode(B3PR, OUTPUT);  aw1.pinMode(B3PB, OUTPUT);  aw1.pinMode(B3PG, OUTPUT);  // Board 3
@@ -174,12 +144,6 @@ void setup()
   aw2.pinMode(B10PR, OUTPUT); aw2.pinMode(B10PB, OUTPUT); aw2.pinMode(B10PG, OUTPUT); // Board 10
   aw3.pinMode(B11PR, OUTPUT); aw3.pinMode(B11PB, OUTPUT); aw3.pinMode(B11PG, OUTPUT); // Board 11
   aw3.pinMode(B12PR, OUTPUT); aw3.pinMode(B12PB, OUTPUT); aw3.pinMode(B12PG, OUTPUT); // Board 12
-
-
-  
-
-
-
 }
 
 void loop()
@@ -189,49 +153,86 @@ void loop()
 
   
 }
+void DoCommand(struct packet currentCommand)
+{
+  // easy access of struct parts
+  int cmd  = currentCommand.commandNumber;
+  int id   = currentCommand.objectID;
+  int data = currentCommand.data;
+
+  // choose function using command number 
+  switch(cmd) {
+    case PING:
+      Ping();  
+      break;
+    case TESTLED:
+      TestLED(id,data);
+      break;
+    case BATTERY:
+      Battery(id);
+      break;
+    case CALIBRATE:
+      Calibrate(id);
+      break;
+    case NTRIALS:
+      NTrials(data);
+      break;
+    case TRIAL:
+      Trial(id,data);
+      break;      
+    case SEPARATION:
+      Separation(data);
+      break;
+    case TIMEOUT:
+      Timeout(data);
+      break;
+    case SAMPLERATE:
+      SampleRate(data);
+      break;
+    case STREAM:
+      //Stream(data);
+      TestSequence();
+      break;
+    default:
+      NoCommand();
+  }
+}
 
 void TestSequence()
 {
-    while (i < (sizeof(sequence)/sizeof(int))) 
+  while (i < (sizeof(sequence)/sizeof(int)))
   {
     unsigned long startTime = millis(); // gets current time for timeout  
-    MoveMe(); // indicates which box to move with a blue LEDs
-    bool isMoving = false;
-    bool OtherBoxMoving = false;
-    while ((millis() - startTime) < timeout)
+    if((millis() - startTime) > SAMPLERATE)
     {
-      Serial.printf("Checking if box %d has moved \n", sequence[i]); delay(500);
-      //Serial.print(".");
-      if (boardsStruct[sequence[i]].isMoving) 
+      // Write to computer
+    }
+
+    MoveMe(); // indicates which box to move with a blue LEDs
+    
+    bool isMoving = false; // using to set values to allow breaking of loops
+    bool OtherBoxMoving = false;
+    while ((millis() - startTime) < timeout) //Timeout while checking, breaks if moved
+    {
+      if (boardsStruct[sequence[i]].isMoving) {isMoving = true; break; } //Checks if commanded is moving 
+      for(int j=1; j<13;j++) // checks rest of boxes
       {
-        Serial.println("Hey the box moved!");
-        isMoving = true; break; 
-      }
-      for(int j=1; j<13;j++)
-      {
-        Serial.printf("Checking if box %d has moved \n",j);        
-        if (j == sequence[i]){ continue;}
-        if (boardsStruct[j].isMoving) 
-        { // check if any other box is moving
-          OtherBoxMoving = true; // set flag to indicate incorrect box is moving
-          break; // exit the loop
-        }        
+        if (j == sequence[i]){ continue;} // skip curent box
+        if (boardsStruct[j].isMoving) { OtherBoxMoving = true; break;} 
       }
       if(OtherBoxMoving){break;}
     }
     
-    if (isMoving) {MoveMe_Correct();delay(750);}
-    else if(OtherBoxMoving )
+    if (isMoving) {MoveMe_Correct();delay(750);} // Correct LED Responce
+    else if(OtherBoxMoving ) // Wrong LED Responce
     {
         for(int j=0; j<5; j++)
         {
-          MoveMe_WRONG();delay(250);RGB_reset(); delay(250);
+          MoveMe_WRONG();delay(250);RGB_reset(); delay(250); // Allows for Flashing of RED LED
         }
     }
-    
-    else {MoveMe_WRONG();delay(750);}
-    delay(1000);
-    RGB_reset(); delay(500);
+    else {MoveMe_WRONG();delay(1000);} // Timeout LED Reponce
+    RGB_reset(); delay(separation);
     i++;
   }
 }
@@ -298,12 +299,15 @@ bool WritePacket(struct packet p)
   return(true);
 }
 
-struct hexString IntToHexString(uint n){
+struct hexString IntToHexString(uint n)
+{
   struct hexString hs; 
-  if(n == 0){
+  if(n == 0)
+  {
     hs.size = 1;    
   }
-  else{
+  else
+  {
     // calculate number of digits needed to represent number in hex
     hs.size = floor( log(n)/log(16) ) + 1;       
   }
@@ -313,8 +317,8 @@ struct hexString IntToHexString(uint n){
   return(hs);
 }
 
-
-struct packet ReadCommand(){
+struct packet ReadCommand()
+{
   // init strings
   char b0_stx[]     = "0"; // note: string terminates with '\0'
   char b1_cmd[]     = "0";
@@ -323,13 +327,16 @@ struct packet ReadCommand(){
   char b7_etx[]     = "0";
 
   // read until STX found, which marks the start of a data packet
-  while(true){
+  while(true)
+  {
     // wait for data 
-    if(Serial.available() > 0){
+    if(Serial.available() > 0)
+    {
       // read a byte
       b0_stx[0] = Serial.read();
       // check if byte is STX
-      if(b0_stx[0] == 0x02){
+      if(b0_stx[0] == 0x02)
+      {
         break;
       }
     }        
@@ -350,7 +357,8 @@ struct packet ReadCommand(){
   b7_etx[0]   = Serial.read();
 
   // verify that last byte is ETX, which ends the packet
-  if( b7_etx[0] != 0x03){
+  if( b7_etx[0] != 0x03)
+  {
     // bad packet, try to read again 
     return(ReadCommand());
   }
@@ -368,51 +376,6 @@ int HexStringToInt(char str[])
 {
   // convert unsigned hex string into integer
   return (int) strtoul(str, 0, 16);
-}
-
-
-void DoCommand(struct packet currentCommand)
-{
-  // easy access of struct parts
-  int cmd  = currentCommand.commandNumber;
-  int id   = currentCommand.objectID;
-  int data = currentCommand.data;
-
-  // choose function using command number 
-  switch(cmd) {
-    case PING:
-      Ping();  
-      break;
-    case TESTLED:
-      TestLED(id,data);
-      break;
-    case BATTERY:
-      Battery(id);
-      break;
-    case CALIBRATE:
-      Calibrate(id);
-      break;
-    case NTRIALS:
-      NTrials(data);
-      break;
-    case TRIAL:
-      Trial(id,data);
-      break;      
-    case SEPARATION:
-      Separation(data);
-      break;
-    case TIMEOUT:
-      Timeout(data);
-      break;
-    case SAMPLERATE:
-      SampleRate(data);
-      break;
-    case STREAM:
-      Stream(data);
-      break;
-    default:
-      NoCommand();
-  }
 }
 
 void Ping()
@@ -451,7 +414,7 @@ void Trial(int id, int trialNumber)
 
 void Separation(int time_ms)
 {
-  
+  separation = time_ms; // time between trials
 }
 
 void Timeout(int time_ms)
@@ -477,7 +440,7 @@ void Stream(int flag)
 
 void NoCommand()
 {
-  
+  Serial.print(".")
 }
 
 void MoveMe()
@@ -554,11 +517,6 @@ void RGB_reset()
   aw2.digitalWrite(B10PR, LOW); aw1.digitalWrite(B10PB, LOW); aw1.digitalWrite(B10PG, LOW);
   aw3.digitalWrite(B11PR, LOW); aw1.digitalWrite(B11PB, LOW); aw1.digitalWrite(B11PG, LOW);
   aw3.digitalWrite(B12PR, LOW); aw1.digitalWrite(B12PB, LOW); aw1.digitalWrite(B12PG, LOW);
-}
-int Imoved()
-{
-  int rnd = random(2); Serial.printf("I moved Box number %d \n ", rnd);
-  return rnd;
 }
   void CheckifChosenCorectly(int rnd,int var, int sequence[])
 {
