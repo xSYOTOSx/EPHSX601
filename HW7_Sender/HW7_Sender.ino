@@ -1,13 +1,13 @@
 //WIFI SetUp
 #include <ESP8266WiFi.h>
 #include <espnow.h>
-
-//Recivers MAC Address:  C8:C9:A3:5B:DA:BB
-uint8_t broadcastAddress[] = {0xC8, 0xC9, 0xA3, 0x5B, 0xDA, 0xBB};
+int i = 0;
+//Recivers MAC Address:  C8:C9:A3:5B:DD:7B
+uint8_t broadcastAddress[] = {0xC8, 0xC9, 0xA3, 0x5B, 0xDD, 0x7B};
 typedef struct struct_message 
 {
     int id;
-    float x;
+    int x;
 } struct_message;
 struct_message myData; //names the struct variable myData
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) 
@@ -36,7 +36,9 @@ void setup()
 
 void loop() 
 {
-  myData.x = millis(); Serial.printf("x: %n \n", myData.x)
+  i++;
+  myData.x = i; Serial.printf("x: %d \n", myData.x);
+  esp_now_send(0, (uint8_t *) &myData, sizeof(myData));
   delay(1000);
 }
 

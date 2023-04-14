@@ -5,7 +5,7 @@
 typedef struct struct_message 
 {
     int id;
-    float x;
+    int x;
 } struct_message;
 // Create a struct_message called myData
 struct_message myData;
