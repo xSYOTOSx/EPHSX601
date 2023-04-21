@@ -102,16 +102,19 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len)
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("Board ID: %u: %u bytes\n", myData.id, len);
   // Update the structures with the new incoming data
+  boardsStruct[myData.id].id = myData.id;
   boardsStruct[myData.id].x = myData.x;
   boardsStruct[myData.id].y = myData.y;
   boardsStruct[myData.id].z = myData.z;
   boardsStruct[myData.id].m = myData.m;
   boardsStruct[myData.id].isMoving = myData.isMoving;
-  //Serial.print("x value: "); Serial.println(boardsStruct[myData.id].x);
-  //Serial.print("y value: "); Serial.println(boardsStruct[myData.id].y);
-  //Serial.print("z value: "); Serial.println(boardsStruct[myData.id].z);
-  //Serial.print("m value: "); Serial.println(boardsStruct[myData.id].m);
-  //Serial.print("T/F value: "); Serial.println(boardsStruct[myData.id].isMoving);
+  Serial.printf("ID:%d X:%f Y:%f Z:%f m:%f T/F:%d \n",
+                boardsStruct[myData.id].id,
+                boardsStruct[myData.id].x,
+                boardsStruct[myData.id].y,
+                boardsStruct[myData.id].z,
+                boardsStruct[myData.id].m,
+                boardsStruct[myData.id].isMoving);
   //Serial.println();
 }
 
@@ -127,9 +130,9 @@ void setup()
   Serial.println("Setup has been compleated ");
   
   //Initalizes the multiplexer I2C
-  if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
-  if (! aw1.begin(0x58)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
-  if (! aw1.begin(0x58)) { Serial.println("0x5A not found?");while (1) delay(10);} Serial.println("0x5A found!");//0x5A (A1 shorted)
+  //if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
+  //if (! aw1.begin(0x58)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
+  //if (! aw1.begin(0x58)) { Serial.println("0x5A not found?");while (1) delay(10);} Serial.println("0x5A found!");//0x5A (A1 shorted)
 
   //Defines pins on the multiplexer
   aw1.pinMode(B1PR, OUTPUT);  aw1.pinMode(B1PB, OUTPUT);  aw1.pinMode(B1PG, OUTPUT);  // Board 1
@@ -148,7 +151,7 @@ void setup()
 
 void loop()
 {
-  DoCommand(ReadCommand());
+  //DoCommand(ReadCommand());
 
 
   
@@ -232,7 +235,8 @@ void TestSequence()
         }
     }
     else {MoveMe_WRONG();delay(1000);} // Timeout LED Reponce
-    RGB_reset(); delay(separation);
+    RGB_reset(); 
+    //delay(separation);
     i++;
   }
 }

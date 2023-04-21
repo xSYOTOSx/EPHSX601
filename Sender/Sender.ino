@@ -26,13 +26,14 @@ when testing and calibration.
   in a later section
 *************************************************************************/
 unsigned long lastTime = 0;
-unsigned long timerDelay = 50; 
-float Theshold = 10.75;
+unsigned long timerDelay = 10; 
+float Theshold = 0;
 static int previousMovingState = -1; // for the if changed logic
 
-float cal_x;
-float cal_y;
-float cal_z;
+float cal_x =0;
+float cal_y =0;
+float cal_z =0;
+float cal_m =0;
 
 //WIFI SetUp
 #include <ESP8266WiFi.h>
@@ -83,20 +84,9 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
 void setup() 
 {
   Serial.begin(115200);
-  /*************************************************************************
-  This section setsup the ESP-NOW protocalls.
-  1) Firstly, theirs a loop that catches the program if it cant initilize
-  2) It then sets the role as controller aka the sender in this many-to-one
-     protocoll. 
-  3) After successfully initializing ESP-NOW,  we register the callback 
-     function that will be called when a message is sent. In this case, 
-     register for the OnDataSent() function created previously.
-  4) To send data to the receiver, you need to pair it as a peer. 
-     The esp_now_add_peer() does this. the function needs the following 
-     arguments in order: mac address, peer role, wi-fi channel, key, & 
-     key length
-  *************************************************************************/
-  WiFi.mode(WIFI_STA);
+  
+  //This section setsup the ESP-NOW protocalls.
+   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   if (esp_now_init() != 0) 
   {
@@ -107,16 +97,8 @@ void setup()
   esp_now_register_send_cb(OnDataSent);
   esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
 
-  /*************************************************************************
-  This section setsup the Adafruits MPU6050 libery settings.
-  1) Firstly, theirs a loop that catches the program if it cant initilize
-  2) next theirs settings for what range we need to read for the MPU6050. at
-     the time of this writing. The smaller the range the more sensitive the
-     MPU 6050 is, so i selected the 2G range. 
-  3) At htis time we are not using the gyro feture of the MPU6050
-  4) This libary also has a low pass filter
-  *************************************************************************/
-  
+
+  // Sets up the MPU 6050
   Serial.println("Adafruit MPU6050 test!");
   if (!mpu.begin()) 
   {
@@ -128,13 +110,13 @@ void setup()
   }
   Serial.println("MPU6050 Found!");
   
-
-  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);Serial.print("Accelerometer range set to: +-2G");
+  //Various optiions for the MPU6050
+  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);Serial.println("Accelerometer range set to: +-2G");
   //mpu.setAccelerometerRange(MPU6050_RANGE_4_G);Serial.print("Accelerometer range set to: +-4G");
   //mpu.setAccelerometerRange(MPU6050_RANGE_8_G);Serial.print("Accelerometer range set to: +-8G");
   //mpu.setAccelerometerRange(MPU6050_RANGE_16_G);Serial.print("Accelerometer range set to: +-16G");
 
-  mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);Serial.print("Filter bandwidth set to: 5 Hz");
+  mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);Serial.println("Filter bandwidth set to: 5 Hz");
   //mpu.setFilterBandwidth(MPU6050_BAND_10_HZ);Serial.print("Filter bandwidth set to: 10 Hz");
   //mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);Serial.print("Filter bandwidth set to: 21 Hz");
   //mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);Serial.print("Filter bandwidth set to: 44 Hz");
@@ -142,51 +124,27 @@ void setup()
   //mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);Serial.print("Filter bandwidth set to: 184 Hz");
   //mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);Serial.print("Filter bandwidth set to: 260 Hz");
 
-  
+  // sets borad ID by mac adress
+  if (WiFi.macAddress() == "C8:C9:A3:0B:46:21"){Serial.println("Board ID: 1");  myData.id = 1; }
+  if (WiFi.macAddress() == "24:D7:EB:C6:E5:7A"){Serial.println("Board ID: 2");  myData.id = 2; }
+  if (WiFi.macAddress() == "50:02:91:EA:E3:13"){Serial.println("Board ID: 3");  myData.id = 3; }
+  if (WiFi.macAddress() == "8C:CE:4E:CE:E8:1A"){Serial.println("Board ID: 4");  myData.id = 4; }
+  if (WiFi.macAddress() == "48:3F:DA:7D:FD:6C"){Serial.println("Board ID: 5");  myData.id = 5; }
+  if (WiFi.macAddress() == "D8:BF:C0:C1:2C:41"){Serial.println("Board ID: 6");  myData.id = 6; }
+  if (WiFi.macAddress() == "E0:98:06:8A:B6:B4"){Serial.println("Board ID: 7");  myData.id = 7; }
+  if (WiFi.macAddress() == "BC:DD:C2:6C:7D:3A"){Serial.println("Board ID: 8");  myData.id = 8; }
+  if (WiFi.macAddress() == "8C:CE:4E:CC:60:6D"){Serial.println("Board ID: 9");  myData.id = 9; }
+  if (WiFi.macAddress() == "48:3F:DA:5F:A9:EE"){Serial.println("Board ID: 10"); myData.id = 10; }
+  if (WiFi.macAddress() == "50:02:91:DA:F1:66"){Serial.println("Board ID: 11"); myData.id = 11; }
+  if (WiFi.macAddress() == "EC:FA:BC:4C:36:65"){Serial.println("Board ID: 12"); myData.id = 12; }
+  if (WiFi.macAddress() == "8C:AA:B5:69:B5:10"){Serial.println("Board ID: 13"); myData.id = 13; }
+  if (WiFi.macAddress() == "98:F4:AB:BE:A0:AB"){Serial.println("Board ID: 14"); myData.id = 14; }
 
-
-  /***************************************************************************
-  This section allows us to set the predetermeded calibration settings for
-  each sensor baised on the mac adress. This way we only need one one program
-  for all the boards. This is also where we assign the board ID baised on the
-  mac afress and add it to the myData struct. This is easier than trying to
-  send and compare the mac adress on the reciver end. The calibration is done
-  by running the program and making edits to the avrage to until it reads 
-  'zero'. For enxample if while the chip is flat and not moving it reads an 
-  avrage of 10.2 m/s^2 on the z axis, the a correction of -0.4 is added so it
-  reads 9.8 m/s^2 ie zero for a non aceleratining object. 
-  ID  1:C8:C9:A3:0B:46:21   ID  2:24:D7:EB:C6:E5:7A   ID  3:50:02:91:EA:E3:13
-  ID  4:8C:CE:4E:CE:E8:1A   ID  5:    ID  6: 
-  ID  7:    ID  8:    ID  9: 
-  ID 10:    ID 11:    ID 12: 
-  ID 13:    ID 14:    ID 15: 
-  ID 16: 40:F5:20:26:B9:FB TEST Sender
-  ID 17: 40:F5:20:28:A1:D4 TEST Reciver  
-  ***************************************************************************/
-  if (WiFi.macAddress() == "C8:C9:A3:0B:46:21"){Serial.println("Board ID: 1");  myData.id = 1;  cal_x=0.15;cal_y=0.08;cal_z=-0.42; delay(5000);}
-  if (WiFi.macAddress() == "24:D7:EB:C6:E5:7A"){Serial.println("Board ID: 2");  myData.id = 2;  cal_x=0.15;cal_y=0.45;cal_z=-0.52; delay(5000);}
-  if (WiFi.macAddress() == "50:02:91:EA:E3:13"){Serial.println("Board ID: 3");  myData.id = 3;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "8C:CE:4E:CE:E8:1A"){Serial.println("Board ID: 4");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "48:3F:DA:7D:FD:6C"){Serial.println("Board ID: 5");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "D8:BF:C0:C1:2C:41"){Serial.println("Board ID: 6");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "E0:98:06:8A:B6:B4"){Serial.println("Board ID: 7");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "BC:DD:C2:6C:7D:3A"){Serial.println("Board ID: 8");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "8C:CE:4E:CC:60:6D"){Serial.println("Board ID: 9");  myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "48:3F:DA:5F:A9:EE"){Serial.println("Board ID: 10"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "50:02:91:DA:F1:66"){Serial.println("Board ID: 11"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "EC:FA:BC:4C:36:65"){Serial.println("Board ID: 12"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "8C:AA:B5:69:B5:10"){Serial.println("Board ID: 13"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
-  if (WiFi.macAddress() == "98:F4:AB:BE:A0:AB"){Serial.println("Board ID: 14"); myData.id = 4;  cal_x=0;cal_y=0;cal_z=0;delay(5000);}
+  //callibrates the mpu 6050 for its current orentation
+  calibration();
 }
 
-  /*************************************************************************
-  This is the main loop. It loops baised on the time delay that we set in 
-  the beginnining. This frist gets the events from the MPU6050 and saves it
-  the myData struct. myData.m is the magnitude of the acceleration, and is
-  whats used to detect motion. The idea is that nomatter the end orentation
-  we can pass a postive value for our comparititer. This magnitude is than
-  compared to our theshold and the boolean value is then published
-  *************************************************************************/
+
 void loop() 
 {
   
@@ -194,35 +152,29 @@ void loop()
   {
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
-    myData.x = a.acceleration.x + cal_x;
-    myData.y = a.acceleration.y + cal_y;
-    myData.z = a.acceleration.z + cal_z; 
+    myData.x = a.acceleration.x - (cal_x);
+    myData.y = a.acceleration.y - (cal_y);
+    myData.z = a.acceleration.z - (cal_z); 
     myData.m = sqrt( pow(myData.x,2)  + pow(myData.y,2)+ pow(myData.z,2) );
+    
     if (myData.m > Theshold) { myData.isMoving = 1;}//True
     else                     { myData.isMoving = 0;}//False       
-    //Plotter(); // for serial plotter useage
     Printer(); //Serial Printer to see that the accerlation is doing
+    
     if (myData.isMoving != previousMovingState) 
-    { //only sends to reciver if thiers a change to the moving
+    { 
+      //only sends to reciver if thiers a change to the moving
       esp_now_send(0, (uint8_t *) &myData, sizeof(myData));
       previousMovingState = myData.isMoving; // update previous state
       delay(500);
     }
+    
+    //esp_now_send(0, (uint8_t *) &myData, sizeof(myData)); // Use for testing, allows data to send every time
     lastTime = millis();
   }
+    
 }
 
-void Plotter()
-{
-  /*************************************************************************
-  This lets us use the arduino Serial plotter, which is a continious time v. 
-  magnitude graph. This way we can see the SS errors. 
-  *************************************************************************/
-  Serial.print(myData.x); Serial.print(",");
-  Serial.print(myData.y); Serial.print(",");
-  Serial.print(myData.z); Serial.print(", ");
-  Serial.print(myData.m); Serial.println("");  
-}
 
 void Printer()
 {
@@ -230,15 +182,56 @@ void Printer()
   This lets use the Serial print for debugguging purposes.  
   *************************************************************************/
   //Serial.println("    X    Y    Z   MAG");
-  Serial.printf(" X:%f  Y:%f  Z:%f  MAG:%f  Is Moving? %d \n", myData.x, myData.y, myData.z,myData.m,myData.isMoving);
-  /*Serial.print(" ");
-  Serial.print(myData.x);
-  Serial.print(" ");
-  Serial.print(myData.y);
-  Serial.print(" ");
-  Serial.print(myData.z);
-  Serial.print(" ");
-  Serial.print(myData.m);
-  Serial.println("   Acceleration (m/s^2)");
-  Serial.print("Is Moving?: "); Serial.println(myData.isMoving);*/
+  Serial.printf("ID:%d X:%f  Y:%f  Z:%f  MAG:%f  Is Moving? %d \n", 
+                myData.id, myData.x, myData.y, myData.z,myData.m,myData.isMoving);
 }
+
+//cal_x=0.15;cal_y=0.08;cal_z=-0.42;
+void calibration()
+{
+  Serial.println("Calibrating MPU6050...");
+
+  // Accumulate sensor data for calibration
+  float accel_x_sum = 0;
+  float accel_y_sum = 0;
+  float accel_z_sum = 0;
+  float accel_m_sum = 0;
+  const int numSamples = 1000; // Number of samples for calibration
+
+  // Collect samples
+  for (int i = 0; i < numSamples; i++) 
+  {
+    // Read raw sensor data
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
+
+    // Accumulate sensor data
+    accel_x_sum = accel_x_sum + a.acceleration.x;
+    accel_y_sum = accel_y_sum + a.acceleration.y;
+    accel_z_sum = accel_z_sum + a.acceleration.z;
+    //Serial.printf("get values? X:%f y:%f z:%f \n",a.acceleration.x,a.acceleration.y,a.acceleration.z);
+    Serial.printf("Runnig SUM(%d)  x:%f y:%f z:%f \n",i,accel_x_sum,accel_y_sum,accel_z_sum );
+    delay(10); 
+  }
+
+  // Calculate calibration offsets
+  cal_x = accel_x_sum / numSamples;
+  cal_y = accel_y_sum / numSamples;
+  cal_z = accel_z_sum / numSamples;
+  
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  float T_x = a.acceleration.x - cal_x;
+  float T_y = a.acceleration.y - cal_y;
+  float T_z = a.acceleration.z - cal_z;
+  cal_m = sqrt( pow(T_x,2)  + pow(T_y,2)+ pow(T_z,2) );
+  Theshold = cal_m +3 ;
+
+  Serial.println("--- Finished Calibration ---");
+  Serial.printf("x:%f y:%f z:%f m:%f Theshold:%f \n", cal_x, cal_y, cal_z, cal_m, Theshold);
+   
+  
+  delay(3000);
+}
+
+
