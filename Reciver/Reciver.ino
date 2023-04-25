@@ -24,14 +24,16 @@ uint8_t B1PR = 1;  uint8_t B1PB = 2;  uint8_t B1PG = 3;  // Board 1
 uint8_t B2PR = 4;  uint8_t B2PB = 5;  uint8_t B2PG = 6;  // Board 2
 uint8_t B3PR = 7;  uint8_t B3PB = 8;  uint8_t B3PG = 9;  // Board 3
 uint8_t B4PR = 10; uint8_t B4PB = 11; uint8_t B4PG = 12; // Board 4
-uint8_t B5PR = 13; uint8_t B5PB = 14; uint8_t B5PG = 15; // Board 5
+
+
 Adafruit_AW9523 aw2;
+uint8_t B5PR = 13; uint8_t B5PB = 14; uint8_t B5PG = 15;    // Board 5
 uint8_t B6PR = 1;   uint8_t B6PB = 2;   uint8_t B6PG = 3;   // Board 6
 uint8_t B7PR = 4;   uint8_t B7PB = 5;   uint8_t B7PG = 6;   // Board 7
 uint8_t B8PR = 7;   uint8_t B8PB = 8;   uint8_t B8PG = 9;   // Board 8
+Adafruit_AW9523 aw3;
 uint8_t B9PR = 10;  uint8_t B9PB = 11;  uint8_t B9PG = 12;  // Board 9
 uint8_t B10PR = 13; uint8_t B10PB = 14; uint8_t B10PG = 15; // Board 10
-Adafruit_AW9523 aw3;
 uint8_t B11PR = 1;  uint8_t B11PB = 2;  uint8_t B11PG = 3;  // Board 11
 uint8_t B12PR = 4;  uint8_t B12PB = 5;  uint8_t B12PG = 6;  // Board 12
 
@@ -96,9 +98,9 @@ struct_message boardsStruct[15] = {board1, board2,board3,board4,board5, board6,b
 void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len)
 {
   char macStr[18];
-  //Serial.print("Packet received from: ");
-  //snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  //Serial.println(macStr);
+  Serial.print("Packet received from: ");
+  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+  Serial.println(macStr);
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("Board ID: %u: %u bytes\n", myData.id, len);
   // Update the structures with the new incoming data
@@ -139,12 +141,12 @@ void setup()
   aw1.pinMode(B2PR, OUTPUT);  aw1.pinMode(B2PB, OUTPUT);  aw1.pinMode(B2PG, OUTPUT);  // Board 2
   aw1.pinMode(B3PR, OUTPUT);  aw1.pinMode(B3PB, OUTPUT);  aw1.pinMode(B3PG, OUTPUT);  // Board 3
   aw1.pinMode(B4PR, OUTPUT);  aw1.pinMode(B4PB, OUTPUT);  aw1.pinMode(B4PG, OUTPUT);  // Board 4
-  aw1.pinMode(B5PR, OUTPUT);  aw1.pinMode(B5PB, OUTPUT);  aw1.pinMode(B5PG, OUTPUT);  // Board 5
+  aw2.pinMode(B5PR, OUTPUT);  aw2.pinMode(B5PB, OUTPUT);  aw2.pinMode(B5PG, OUTPUT);  // Board 5
   aw2.pinMode(B6PR, OUTPUT);  aw2.pinMode(B6PB, OUTPUT);  aw2.pinMode(B6PG, OUTPUT);  // Board 6
   aw2.pinMode(B7PR, OUTPUT);  aw2.pinMode(B7PB, OUTPUT);  aw2.pinMode(B7PG, OUTPUT);  // Board 7
   aw2.pinMode(B8PR, OUTPUT);  aw2.pinMode(B8PB, OUTPUT);  aw2.pinMode(B8PG, OUTPUT);  // Board 8
-  aw2.pinMode(B9PR, OUTPUT);  aw2.pinMode(B9PB, OUTPUT);  aw2.pinMode(B9PG, OUTPUT);  // Board 9
-  aw2.pinMode(B10PR, OUTPUT); aw2.pinMode(B10PB, OUTPUT); aw2.pinMode(B10PG, OUTPUT); // Board 10
+  aw3.pinMode(B9PR, OUTPUT);  aw3.pinMode(B9PB, OUTPUT);  aw3.pinMode(B9PG, OUTPUT);  // Board 9
+  aw3.pinMode(B10PR, OUTPUT); aw3.pinMode(B10PB, OUTPUT); aw3.pinMode(B10PG, OUTPUT); // Board 10
   aw3.pinMode(B11PR, OUTPUT); aw3.pinMode(B11PB, OUTPUT); aw3.pinMode(B11PG, OUTPUT); // Board 11
   aw3.pinMode(B12PR, OUTPUT); aw3.pinMode(B12PB, OUTPUT); aw3.pinMode(B12PG, OUTPUT); // Board 12
 }
@@ -418,7 +420,7 @@ void Trial(int id, int trialNumber)
 
 void Separation(int time_ms)
 {
-  separation = time_ms; // time between trials
+ // separation = time_ms; // time between trials
 }
 
 void Timeout(int time_ms)
@@ -444,7 +446,7 @@ void Stream(int flag)
 
 void NoCommand()
 {
-  Serial.print(".")
+  Serial.print(".");
 }
 
 void MoveMe()
@@ -513,14 +515,14 @@ void RGB_reset()
   aw1.digitalWrite(B2PR,  LOW); aw1.digitalWrite(B2PB,  LOW); aw1.digitalWrite(B2PG,  LOW);
   aw1.digitalWrite(B3PR,  LOW); aw1.digitalWrite(B3PB,  LOW); aw1.digitalWrite(B3PG,  LOW);
   aw1.digitalWrite(B4PR,  LOW); aw1.digitalWrite(B4PB,  LOW); aw1.digitalWrite(B4PG,  LOW);
-  aw1.digitalWrite(B5PR,  LOW); aw1.digitalWrite(B5PB,  LOW); aw1.digitalWrite(B5PG,  LOW);
-  aw2.digitalWrite(B6PR,  LOW); aw1.digitalWrite(B6PB,  LOW); aw1.digitalWrite(B6PG,  LOW);
-  aw2.digitalWrite(B7PR,  LOW); aw1.digitalWrite(B7PB,  LOW); aw1.digitalWrite(B7PG,  LOW);
-  aw2.digitalWrite(B8PR,  LOW); aw1.digitalWrite(B8PB,  LOW); aw1.digitalWrite(B8PG,  LOW);
-  aw2.digitalWrite(B9PR,  LOW); aw1.digitalWrite(B9PB,  LOW); aw1.digitalWrite(B9PG,  LOW);
-  aw2.digitalWrite(B10PR, LOW); aw1.digitalWrite(B10PB, LOW); aw1.digitalWrite(B10PG, LOW);
-  aw3.digitalWrite(B11PR, LOW); aw1.digitalWrite(B11PB, LOW); aw1.digitalWrite(B11PG, LOW);
-  aw3.digitalWrite(B12PR, LOW); aw1.digitalWrite(B12PB, LOW); aw1.digitalWrite(B12PG, LOW);
+  aw2.digitalWrite(B5PR,  LOW); aw2.digitalWrite(B5PB,  LOW); aw2.digitalWrite(B5PG,  LOW);
+  aw2.digitalWrite(B6PR,  LOW); aw2.digitalWrite(B6PB,  LOW); aw2.digitalWrite(B6PG,  LOW);
+  aw2.digitalWrite(B7PR,  LOW); aw2.digitalWrite(B7PB,  LOW); aw2.digitalWrite(B7PG,  LOW);
+  aw2.digitalWrite(B8PR,  LOW); aw2.digitalWrite(B8PB,  LOW); aw2.digitalWrite(B8PG,  LOW);
+  aw3.digitalWrite(B9PR,  LOW); aw3.digitalWrite(B9PB,  LOW); aw3.digitalWrite(B9PG,  LOW);
+  aw3.digitalWrite(B10PR, LOW); aw3.digitalWrite(B10PB, LOW); aw3.digitalWrite(B10PG, LOW);
+  aw3.digitalWrite(B11PR, LOW); aw3.digitalWrite(B11PB, LOW); aw3.digitalWrite(B11PG, LOW);
+  aw3.digitalWrite(B12PR, LOW); aw3.digitalWrite(B12PB, LOW); aw3.digitalWrite(B12PG, LOW);
 }
   void CheckifChosenCorectly(int rnd,int var, int sequence[])
 {

@@ -148,8 +148,8 @@ void setup()
 void loop() 
 {
   
-  if ((millis() - lastTime) > timerDelay) 
-  {
+  //if ((millis() - lastTime) > timerDelay) 
+  //{
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     myData.x = a.acceleration.x - (cal_x);
@@ -159,19 +159,19 @@ void loop()
     
     if (myData.m > Theshold) { myData.isMoving = 1;}//True
     else                     { myData.isMoving = 0;}//False       
-    Printer(); //Serial Printer to see that the accerlation is doing
+    //Printer(); //Serial Printer to see that the accerlation is doing
     
     if (myData.isMoving != previousMovingState) 
     { 
       //only sends to reciver if thiers a change to the moving
       esp_now_send(0, (uint8_t *) &myData, sizeof(myData));
       previousMovingState = myData.isMoving; // update previous state
-      delay(500);
+      //delay(500);
     }
     
     //esp_now_send(0, (uint8_t *) &myData, sizeof(myData)); // Use for testing, allows data to send every time
-    lastTime = millis();
-  }
+    lastTime = millis(); Serial.println(lastTime);
+  //}
     
 }
 
@@ -186,7 +186,7 @@ void Printer()
                 myData.id, myData.x, myData.y, myData.z,myData.m,myData.isMoving);
 }
 
-//cal_x=0.15;cal_y=0.08;cal_z=-0.42;
+
 void calibration()
 {
   Serial.println("Calibrating MPU6050...");
