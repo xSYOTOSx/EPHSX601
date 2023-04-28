@@ -24,18 +24,16 @@ uint8_t B1PR = 1;  uint8_t B1PB = 2;  uint8_t B1PG = 3;  // Board 1
 uint8_t B2PR = 4;  uint8_t B2PB = 5;  uint8_t B2PG = 6;  // Board 2
 uint8_t B3PR = 7;  uint8_t B3PB = 8;  uint8_t B3PG = 9;  // Board 3
 uint8_t B4PR = 10; uint8_t B4PB = 11; uint8_t B4PG = 12; // Board 4
-
-
 Adafruit_AW9523 aw2;
-uint8_t B5PR = 13; uint8_t B5PB = 14; uint8_t B5PG = 15;    // Board 5
-uint8_t B6PR = 1;   uint8_t B6PB = 2;   uint8_t B6PG = 3;   // Board 6
-uint8_t B7PR = 4;   uint8_t B7PB = 5;   uint8_t B7PG = 6;   // Board 7
-uint8_t B8PR = 7;   uint8_t B8PB = 8;   uint8_t B8PG = 9;   // Board 8
+uint8_t B5PR = 0;   uint8_t B5PG = 1;   uint8_t B5PB = 2;   // Board 5
+uint8_t B6PR = 3;   uint8_t B6PG = 4;   uint8_t B6PB = 5;   // Board 6
+uint8_t B7PR = 6;   uint8_t B7PG = 7;   uint8_t B7PB = 8;   // Board 7
+uint8_t B8PR = 14;  uint8_t B8PG = 15;  uint8_t B8PB = 13;  // Board 8
 Adafruit_AW9523 aw3;
-uint8_t B9PR = 10;  uint8_t B9PB = 11;  uint8_t B9PG = 12;  // Board 9
-uint8_t B10PR = 13; uint8_t B10PB = 14; uint8_t B10PG = 15; // Board 10
-uint8_t B11PR = 1;  uint8_t B11PB = 2;  uint8_t B11PG = 3;  // Board 11
-uint8_t B12PR = 4;  uint8_t B12PB = 5;  uint8_t B12PG = 6;  // Board 12
+uint8_t B9PR =  0;  uint8_t B9PB =   1;  uint8_t B9PG =   2;  // Board 9
+uint8_t B10PR = 3;  uint8_t B10PB =  4;  uint8_t B10PG =  5; // Board 10
+uint8_t B11PR = 6;  uint8_t B11PB =  7;  uint8_t B11PG =  8;  // Board 11
+uint8_t B12PR = 9;  uint8_t B12PB = 10;  uint8_t B12PG = 11;  // Board 12
 
 // command IDs
 const int PING       = 0;
@@ -52,10 +50,10 @@ const int STREAM     = 9;
 /////////////////////////////////////////////////////////////////////////
 // number of objects
 const int NOBJECTS   = 12;
-int sequence[10] = {1, 1, 2, 2, 2,1,1,2,1,1};
+
 unsigned long timeout = 5000;
 unsigned long previousMillis = 0;
-int i =0;//global counter. May have a better way if implementing this
+
 
 
 
@@ -122,7 +120,7 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len)
 
 void setup() 
 {
-  Serial.begin(115200); while(! Serial);Serial.println("Hello World! Serial Has Begun");
+  Serial.begin(115200); while(! Serial) delay(1);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   Serial.println("Device set as a Wi-Fi Station");
@@ -132,23 +130,18 @@ void setup()
   Serial.println("Setup has been compleated ");
   
   //Initalizes the multiplexer I2C
-  //if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
-  //if (! aw1.begin(0x58)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
-  //if (! aw1.begin(0x58)) { Serial.println("0x5A not found?");while (1) delay(10);} Serial.println("0x5A found!");//0x5A (A1 shorted)
+  if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
+  if (! aw2.begin(0x59)) { Serial.println("0x59 not found?");while (1) delay(10);} Serial.println("0x59 found!");//0x59 (A0 shorted)
+  if (! aw3.begin(0x5A)) { Serial.println("0x5A not found?");while (1) delay(10);} Serial.println("0x5A found!");//0x5A (A1 shorted)
 
   //Defines pins on the multiplexer
-  aw1.pinMode(B1PR, OUTPUT);  aw1.pinMode(B1PB, OUTPUT);  aw1.pinMode(B1PG, OUTPUT);  // Board 1
-  aw1.pinMode(B2PR, OUTPUT);  aw1.pinMode(B2PB, OUTPUT);  aw1.pinMode(B2PG, OUTPUT);  // Board 2
-  aw1.pinMode(B3PR, OUTPUT);  aw1.pinMode(B3PB, OUTPUT);  aw1.pinMode(B3PG, OUTPUT);  // Board 3
-  aw1.pinMode(B4PR, OUTPUT);  aw1.pinMode(B4PB, OUTPUT);  aw1.pinMode(B4PG, OUTPUT);  // Board 4
-  aw2.pinMode(B5PR, OUTPUT);  aw2.pinMode(B5PB, OUTPUT);  aw2.pinMode(B5PG, OUTPUT);  // Board 5
-  aw2.pinMode(B6PR, OUTPUT);  aw2.pinMode(B6PB, OUTPUT);  aw2.pinMode(B6PG, OUTPUT);  // Board 6
-  aw2.pinMode(B7PR, OUTPUT);  aw2.pinMode(B7PB, OUTPUT);  aw2.pinMode(B7PG, OUTPUT);  // Board 7
-  aw2.pinMode(B8PR, OUTPUT);  aw2.pinMode(B8PB, OUTPUT);  aw2.pinMode(B8PG, OUTPUT);  // Board 8
-  aw3.pinMode(B9PR, OUTPUT);  aw3.pinMode(B9PB, OUTPUT);  aw3.pinMode(B9PG, OUTPUT);  // Board 9
-  aw3.pinMode(B10PR, OUTPUT); aw3.pinMode(B10PB, OUTPUT); aw3.pinMode(B10PG, OUTPUT); // Board 10
-  aw3.pinMode(B11PR, OUTPUT); aw3.pinMode(B11PB, OUTPUT); aw3.pinMode(B11PG, OUTPUT); // Board 11
-  aw3.pinMode(B12PR, OUTPUT); aw3.pinMode(B12PB, OUTPUT); aw3.pinMode(B12PG, OUTPUT); // Board 12
+  for(int i=0; i<=15; i++)
+  {
+    aw1.pinMode(i, OUTPUT);
+    aw2.pinMode(i, OUTPUT);
+    aw3.pinMode(i, OUTPUT);
+  }
+  RGB_test();
 }
 
 void loop()
@@ -451,18 +444,18 @@ void NoCommand()
 
 void MoveMe()
 {
-  if(sequence[i]==1)  {setBoardColor(1,  LOW, HIGH, LOW); Serial.println("Box 1 set to blue");}
-  if(sequence[i]==2)  {setBoardColor(2,  LOW, HIGH, LOW); Serial.println("Box 2 set to blue");}
-  if(sequence[i]==3)  {setBoardColor(3,  LOW, HIGH, LOW); Serial.println("Box 3 set to blue");}
-  if(sequence[i]==4)  {setBoardColor(4,  LOW, HIGH, LOW); Serial.println("Box 4 set to blue");}
-  if(sequence[i]==5)  {setBoardColor(5,  LOW, HIGH, LOW); Serial.println("Box 5 set to blue");}
-  if(sequence[i]==6)  {setBoardColor(6,  LOW, HIGH, LOW); Serial.println("Box 6 set to blue");}
-  if(sequence[i]==7)  {setBoardColor(7,  LOW, HIGH, LOW); Serial.println("Box 7 set to blue");}
-  if(sequence[i]==8)  {setBoardColor(8,  LOW, HIGH, LOW); Serial.println("Box 8 set to blue");}
-  if(sequence[i]==9)  {setBoardColor(9,  LOW, HIGH, LOW); Serial.println("Box 9 set to blue");}
-  if(sequence[i]==10) {setBoardColor(10, LOW, HIGH, LOW); Serial.println("Box 0 set to blue");}
-  if(sequence[i]==11) {setBoardColor(11, LOW, HIGH, LOW); Serial.println("Box 1 set to blue");}
-  if(sequence[i]==12) {setBoardColor(12, LOW, HIGH, LOW); Serial.println("Box 2 set to blue");}
+  if(sequence[i]==1)  {setBoardColor(1,  LOW, LOW, HIGH); Serial.println("Box 1 set to blue");}
+  if(sequence[i]==2)  {setBoardColor(2,  LOW, LOW, HIGH); Serial.println("Box 2 set to blue");}
+  if(sequence[i]==3)  {setBoardColor(3,  LOW, LOW, HIGH); Serial.println("Box 3 set to blue");}
+  if(sequence[i]==4)  {setBoardColor(4,  LOW, LOW, HIGH); Serial.println("Box 4 set to blue");}
+  if(sequence[i]==5)  {setBoardColor(5,  LOW, LOW, HIGH); Serial.println("Box 5 set to blue");}
+  if(sequence[i]==6)  {setBoardColor(6,  LOW, LOW, HIGH); Serial.println("Box 6 set to blue");}
+  if(sequence[i]==7)  {setBoardColor(7,  LOW, LOW, HIGH); Serial.println("Box 7 set to blue");}
+  if(sequence[i]==8)  {setBoardColor(8,  LOW, LOW, HIGH); Serial.println("Box 8 set to blue");}
+  if(sequence[i]==9)  {setBoardColor(9,  LOW, LOW, HIGH); Serial.println("Box 9 set to blue");}
+  if(sequence[i]==10) {setBoardColor(10, LOW, LOW, HIGH); Serial.println("Box 0 set to blue");}
+  if(sequence[i]==11) {setBoardColor(11, LOW, LOW, HIGH); Serial.println("Box 1 set to blue");}
+  if(sequence[i]==12) {setBoardColor(12, LOW, LOW, HIGH); Serial.println("Box 2 set to blue");}
 }
 void MoveMe_Correct()
 {
@@ -508,24 +501,28 @@ void setBoardColor(int board, int red, int blue, int green)
   if (board == 10) {aw2.digitalWrite(B10PR, red); aw2.digitalWrite(B10PB, blue); aw2.digitalWrite(B10PG, green);}
   if (board == 11) {aw3.digitalWrite(B11PR, red); aw3.digitalWrite(B11PB, blue); aw3.digitalWrite(B11PG, green);}
   if (board == 12) {aw3.digitalWrite(B12PR, red); aw3.digitalWrite(B12PB, blue); aw3.digitalWrite(B12PG, green);}
+}
+
+void RGB_test()
+{
+  RGB_reset();
+  for(int i=5; i<=8; i++)
+  {
+    for(int j=1; j<=3; j++)
+    {
+    if(j=1){setBoardColor(i, HIGH, LOW, LOW); delay(1000);RGB_reset();}
+    if(j=2){setBoardColor(i, LOW, HIGH, LOW); delay(1000);RGB_reset();}
+    if(j=3){setBoardColor(i, LOW, LOW, HIGH); delay(1000);RGB_reset();}
+    }
   }
+}
+
 void RGB_reset()
 {
-  aw1.digitalWrite(B1PR,  LOW); aw1.digitalWrite(B1PB,  LOW); aw1.digitalWrite(B1PG,  LOW);
-  aw1.digitalWrite(B2PR,  LOW); aw1.digitalWrite(B2PB,  LOW); aw1.digitalWrite(B2PG,  LOW);
-  aw1.digitalWrite(B3PR,  LOW); aw1.digitalWrite(B3PB,  LOW); aw1.digitalWrite(B3PG,  LOW);
-  aw1.digitalWrite(B4PR,  LOW); aw1.digitalWrite(B4PB,  LOW); aw1.digitalWrite(B4PG,  LOW);
-  aw2.digitalWrite(B5PR,  LOW); aw2.digitalWrite(B5PB,  LOW); aw2.digitalWrite(B5PG,  LOW);
-  aw2.digitalWrite(B6PR,  LOW); aw2.digitalWrite(B6PB,  LOW); aw2.digitalWrite(B6PG,  LOW);
-  aw2.digitalWrite(B7PR,  LOW); aw2.digitalWrite(B7PB,  LOW); aw2.digitalWrite(B7PG,  LOW);
-  aw2.digitalWrite(B8PR,  LOW); aw2.digitalWrite(B8PB,  LOW); aw2.digitalWrite(B8PG,  LOW);
-  aw3.digitalWrite(B9PR,  LOW); aw3.digitalWrite(B9PB,  LOW); aw3.digitalWrite(B9PG,  LOW);
-  aw3.digitalWrite(B10PR, LOW); aw3.digitalWrite(B10PB, LOW); aw3.digitalWrite(B10PG, LOW);
-  aw3.digitalWrite(B11PR, LOW); aw3.digitalWrite(B11PB, LOW); aw3.digitalWrite(B11PG, LOW);
-  aw3.digitalWrite(B12PR, LOW); aw3.digitalWrite(B12PB, LOW); aw3.digitalWrite(B12PG, LOW);
-}
-  void CheckifChosenCorectly(int rnd,int var, int sequence[])
-{
-  if (rnd == sequence[var]) {MoveMe_Correct(); Serial.println("The correct one was moved"); delay(1000);}
-  if (rnd != sequence[var]) {MoveMe_WRONG(); Serial.println("That was the incorrect movement"); delay(1000);}
+  for(int i=0; i<=15; i++)
+  {
+    aw1.digitalWrite(i, LOW);
+    aw2.digitalWrite(i, LOW);
+    aw3.digitalWrite(i, LOW);
+  }
 }
