@@ -2,8 +2,8 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 int i = 0;
-//Recivers MAC Address:  C8:C9:A3:5B:DD:7B
-uint8_t broadcastAddress[] = {0xC8, 0xC9, 0xA3, 0x5B, 0xDD, 0x7B};
+//Recivers MAC Address: 40:F5:20:29:04:D4 
+uint8_t broadcastAddress[] = {0x40, 0xF5, 0x20, 0x29, 0x04, 0xD4};
 typedef struct struct_message 
 {
     int id;
