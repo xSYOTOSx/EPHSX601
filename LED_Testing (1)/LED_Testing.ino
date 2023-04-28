@@ -3,23 +3,23 @@
 #include <ESP8266WiFi.h> 
 #include <espnow.h>
 #include <Adafruit_AW9523.h> // for multiplexer
-int i=0;
+
 //Box # Color ie B1PR is Box 1 Pin for Red is 1
 Adafruit_AW9523 aw1;
-uint8_t B1PR = 1; uint8_t B1PG = 2; uint8_t B1PB = 3;   // Board 1
-uint8_t B2PR = 4; uint8_t B2PG =5; uint8_t B2PB = 6;   // Board 2
-uint8_t B3PR = 7; uint8_t B3PG = 8; uint8_t B3PB = 9;   // Board 3
-uint8_t B4PR = 10;uint8_t B4PG = 11; uint8_t B4PB = 12;  // Board 4
+uint8_t B1PR = 0;  uint8_t B1PG = 1;  uint8_t B1PB = 2;   // Board 1
+uint8_t B2PR = 3;  uint8_t B2PG = 4;  uint8_t B2PB = 5;   // Board 2
+uint8_t B3PR = 6;  uint8_t B3PG = 7;  uint8_t B3PB = 8;   // Board 3
+uint8_t B4PR = 9;  uint8_t B4PG = 10; uint8_t B4PB = 11;  // Board 4
 Adafruit_AW9523 aw2;
 uint8_t B5PR = 0;   uint8_t B5PG = 1;   uint8_t B5PB = 2;   // Board 5
 uint8_t B6PR = 3;   uint8_t B6PG = 4;   uint8_t B6PB = 5;   // Board 6
 uint8_t B7PR = 6;   uint8_t B7PG = 7;   uint8_t B7PB = 8;   // Board 7
 uint8_t B8PR = 14;  uint8_t B8PG = 15;  uint8_t B8PB = 13;  // Board 8
 Adafruit_AW9523 aw3;
-uint8_t B9PR =  0;   uint8_t B9PG =   1; uint8_t B9PB =   9;   // Board 9
-uint8_t B10PR = 3;   uint8_t B10PG =  4; uint8_t B10PB =  5;  // Board 10
-uint8_t B11PR = 6;   uint8_t B11PG =  7; uint8_t B11PB =  8;   // Board 11
-uint8_t B12PR = 15;   uint8_t B12PG = 13; uint8_t B12PB = 14;   // Board 12
+uint8_t B9PR =  0;  uint8_t B9PG =   1; uint8_t B9PB =   9; // Board 9
+uint8_t B10PR = 3;  uint8_t B10PG =  4; uint8_t B10PB =  5;// Board 10
+uint8_t B11PR = 6;  uint8_t B11PG =  7; uint8_t B11PB =  8; // Board 11
+uint8_t B12PR = 13; uint8_t B12PG = 15; uint8_t B12PB = 14; // Board 12
 
 
 
@@ -28,7 +28,7 @@ uint8_t B12PR = 15;   uint8_t B12PG = 13; uint8_t B12PB = 14;   // Board 12
 void setup() 
 {
   Serial.begin(115200); while(! Serial) delay(1);
-  Serial.print("Hello World!");
+  Serial.println("Hello World!");
   
   //Initalizes the multiplexer I2C
   if (! aw1.begin(0x58)) { Serial.println("0x58 not found?");while (1) delay(10);} Serial.println("0x58 found!");//0x58 is default adress
@@ -79,13 +79,14 @@ void setBoardColor(int board, int red, int green, int blue) //RGB
 void RGB_test()
 {
   RGB_reset();
-  for(int i=0; i<=12; i++)
+  for(int i=5; i<=12; i++)
   {
     for(int j=1; j<=3; j++)
     {
-    if(j=1){setBoardColor(i, HIGH, LOW, LOW); Serial.printf("Box %d is Red \n", i) ; delay(500);RGB_reset();}
-    if(j=2){setBoardColor(i, LOW, HIGH, LOW); Serial.printf("Box %d is Green \n", i) ;delay(500);RGB_reset();}
-    if(j=3){setBoardColor(i, LOW, LOW, HIGH); Serial.printf("Box %d is Blue \n", i) ;delay(500);RGB_reset();}
+    
+    if(j=1){setBoardColor(i, HIGH, LOW, LOW); Serial.printf("board %d set to RED \n",i);  delay(500);RGB_reset();}
+    if(j=2){setBoardColor(i, LOW, HIGH, LOW); Serial.printf("board %d set to Green \n",i);delay(500);RGB_reset();}
+    if(j=3){setBoardColor(i, LOW, LOW, HIGH); Serial.printf("board %d set to BLUE \n",i); delay(500);RGB_reset();}
     }
   }
 }
