@@ -50,7 +50,7 @@ Adafruit_MPU6050 mpu;
 /*************************************************************************
 This section setus up various things.
 - Sets the broadcast adress as units MAC adress
-- Recivers MAC Address:  C8:C9:A3:5B:DA:BB
+- Recivers MAC Address: 
 - Setup the message struct. a note more for myself than any future readers
   is, a struct is like a class or an array that allows multiple data types
   (int, string, bool etc.). Acess variables in a structure (also known as 
