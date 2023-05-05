@@ -93,7 +93,9 @@ int   _currentObject   = NOVALUE; // ID of object that was moved
 
 void setup() 
 {
+  
   SystemSetup();
+
   
   // // setup display
   // if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
@@ -604,7 +606,7 @@ struct_message boardsStruct[15] = {board1, board2,board3,board4,board5, board6,b
 
 void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len)
 {
-  char macStr[18];
+  // char macStr[18];
   // Serial.print("Packet received from: ");
   // snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
   // Serial.println(macStr);
@@ -633,7 +635,7 @@ void SystemSetup()
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   // Serial.println("Device set as a Wi-Fi Station");
-  // if (esp_now_init() != 0) {Serial.println("Error initializing ESP-NOW"); return; }
+  if (esp_now_init() != 0) {/*Serial.println("Error initializing ESP-NOW");*/ return; }
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(OnDataRecv);
   // Serial.println("Setup has been compleated ");
@@ -652,20 +654,37 @@ void SystemSetup()
   }
   
   RGB_test();
+  sensor_test();
 }
 
 void RGB_test()
 {
   RGB_reset();
-  for(int i=0; i<=12; i++)
+  for(int i=1; i<=12; i++)
   {
     for(int j=1; j<=3; j++)
     {
-      if(j=1){setBoardColor(i, HIGH, LOW, LOW);  delay(100); RGB_reset();} //RED
-      if(j=3){setBoardColor(i, LOW, HIGH, LOW);  while(!boardsStruct[i].isMoving){delay(1);}; RGB_reset();} // Blue, added acelerometer Test
-      if(j=2){setBoardColor(i, LOW,  LOW, HIGH); delay(100); RGB_reset();} //Green
+      if(j=1){setBoardColor(i, HIGH, LOW, LOW);  delay(100); RGB_reset();} //red
+      if(j=2){setBoardColor(i, LOW,  LOW, HIGH); delay(100); RGB_reset();} //green
+      if(j=3){setBoardColor(i, LOW, HIGH, LOW);  delay(100); RGB_reset();} //blue
     }
   }
+}
+
+void sensor_test()
+{
+  RGB_reset(); 
+  
+  for(int i=1; i<=12; i++)
+    {
+      setBoardColor(i, LOW, HIGH, LOW); //b
+      while(!boardsStruct[i].isMoving)
+      {
+       delay(1);
+      }
+      setBoardColor(i, LOW,  LOW, HIGH); 
+      delay(500); RGB_reset(); //g
+    }
 }
 
 void RGB_reset()
@@ -683,16 +702,14 @@ void TestSequence()
   while (_currentTrial <= _numberOfTrials)
   {
     unsigned long startTime = millis(); // gets current time for timeout  
-
     timer.tick();
-
     MoveMe(); // indicates which box to move with a blue LEDs
     
     bool isMoving = false; // using to set values to allow breaking of loops
     bool OtherBoxMoving = false;
     while ((millis() - startTime) < _timeout_ms) //Timeout while checking, breaks if moved
     {
-      if (boardsStruct[_trialSequence[_currentTrial-1]].isMoving) {
+      if (boardsStruct[ _trialSequence[_currentTrial-1] ].isMoving) {
         isMoving = true; 
         _currentObject = _trialSequence[_currentTrial-1];
         break; 
@@ -711,7 +728,6 @@ void TestSequence()
         }
       }
       if(OtherBoxMoving){break;}
-
       timer.tick();
     }
     
